@@ -1,26 +1,44 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React,{useState,useEffect} from 'react';
+import axios from 'axios';
 
-function App() {
+const App = () => {
+const [rateList, setRateList] = useState([]);
+const [base, setBase] = useState('USD')
+
+  useEffect(() => {
+    getRates('USD')
+  }, [])
+
+  const getRates =async(base)=>{
+    const data=await axios.get(`https://api.exchangeratesapi.io/latest?base=${base}`);
+    const {rates} = data.data;
+    
+    const rateTemp= [];
+    for (const [symbol,rate] of Object.entries(rates)) {
+      rateTemp.push({symbol,rate});
+    }
+    setRateList(rateTemp);
+  }
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <select className="custom-select" value={base} onChange={(e)=>{
+        const value = e.target.value;
+        setBase(value)
+        getRates(value)
+      }
+      }>
+        {rateList.map((d)=>(
+          <option value={d.symbol} key={d.symbol}>{d.symbol}</option>
+        ))}
+        
+      </select>
+      <ul className='list-group'>
+        {rateList.map((d)=>(
+          <li className='list-group-item' key={d.symbol}>{d.symbol} -{d.rate}</li>
+        ))}
+      </ul>
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
